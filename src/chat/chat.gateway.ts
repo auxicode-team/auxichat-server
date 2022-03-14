@@ -11,10 +11,10 @@ import {
 import { Server, Socket } from "socket.io";
 
 @WebSocketGateway({
-  namespace: "/chat",
-  // cors: {
-  //   origin: '*',
-  // },
+  cors: {
+    origin: true,
+    credentials: true,
+  },
 })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -38,9 +38,11 @@ export class ChatGateway
 
   @SubscribeMessage("chatToServer")
   handleMessage(
-    client: Socket,
+    client: any,
     message: { sender: string; room: string; message: string },
   ) {
+    console.log(client.request.user);
+
     this.wss.to(message.room).emit("chatToClient", message);
   }
 }
