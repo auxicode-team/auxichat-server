@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Query,
+  Request,
   UseGuards,
 } from "@nestjs/common";
 import { DeleteResult } from "mongodb";
@@ -14,6 +15,7 @@ import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user-dto";
 import { ResponseBody } from "../utils/ResponseBody";
 import { Role, User } from "./user.model";
+import { SessionAuthGuard } from "../auth/session-auth.guard";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 
@@ -34,6 +36,12 @@ export class UsersController {
       message: "User has been created successfully",
       user,
     };
+  }
+
+  @UseGuards(SessionAuthGuard)
+  @Get("/me")
+  async me(@Request() req: any) {
+    return req.user;
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard(Role.ADMIN))

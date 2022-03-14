@@ -8,11 +8,12 @@ import { AuthController } from "./auth.controller";
 import { UsersModule } from "../users/users.module";
 import { LocalStrategy } from "./local.strategy";
 import { JwtStrategy } from "./jwt.strategy";
+import { SessionSerializer } from "./session.serializer";
 
 @Module({
   imports: [
     UsersModule,
-    PassportModule,
+    PassportModule.register({ session: true }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -22,7 +23,7 @@ import { JwtStrategy } from "./jwt.strategy";
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, SessionSerializer],
   controllers: [AuthController],
 })
 export class AuthModule {}
