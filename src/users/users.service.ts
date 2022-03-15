@@ -5,7 +5,7 @@ import { UpdateResult, DeleteResult } from "mongodb";
 
 import { CreateUserDto } from "./dto/create-user-dto";
 import { User } from "./user.model";
-import { addPagination } from "../utils/addPagination";
+import { addPagination, PaginatedResult } from "../utils/addPagination";
 
 @Injectable()
 export class UsersService {
@@ -26,7 +26,7 @@ export class UsersService {
     return result;
   }
 
-  async findAll(page: number, limit: number) {
+  async findAll(page: number, limit: number): Promise<PaginatedResult<User>> {
     const [data] = await this.userModel.aggregate([
       { $match: { role: "user" } },
       { $project: { password: 0 } },

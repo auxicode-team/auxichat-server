@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import * as passport from "passport";
 
 import { expressSession } from "../lib/expressSession";
+import { UnauthorizedException } from "@nestjs/common";
 
 export default class PassportSocketIoAdapter extends IoAdapter {
   createIOServer(port: number, options?: any): any {
@@ -10,9 +11,16 @@ export default class PassportSocketIoAdapter extends IoAdapter {
 
     const wrap = (middleware: any) => (socket: any, next: any) =>
       middleware(socket.request, {}, next);
-    server.use(wrap(expressSession));
-    server.use(wrap(passport.initialize()));
-    server.use(wrap(passport.session()));
+    server.of("/chat").use(wrap(expressSession));
+    server.of("/chat").use(wrap(passport.initialize()));
+    server.of("/chat").use(wrap(passport.session()));
+    server.of("/chat").use((socket: any, next) => {
+      if (socket.request.user) {
+        next();
+      } else {
+        next(new UnauthorizedException("Please Login First!"));
+      }
+    });
 
     return server;
   }

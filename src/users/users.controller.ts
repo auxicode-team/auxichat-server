@@ -44,20 +44,17 @@ export class UsersController {
     return req.user;
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard(Role.ADMIN))
+  @UseGuards(SessionAuthGuard)
   @Get("/getAll")
-  async getAllUser(@Query() query: any): Promise<ResponseBody<User[]>> {
+  async getAllUser(@Query() query: any) {
     const { page = 1, limit = 40 } = query;
 
     const allUsers = await this.usersService.findAll(page, limit);
 
-    return {
-      message: "All User data",
-      data: allUsers,
-    };
+    return allUsers;
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard(Role.ADMIN))
+  @UseGuards(SessionAuthGuard, RolesGuard(Role.ADMIN))
   @Delete("/delete/:id")
   async deleteUser(
     @Param("id") id: string,

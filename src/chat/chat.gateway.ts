@@ -9,8 +9,10 @@ import {
   WsResponse,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
+import { User } from "../users/user.model";
 
 @WebSocketGateway({
+  namespace: "/chat",
   cors: {
     origin: true,
     credentials: true,
@@ -27,13 +29,27 @@ export class ChatGateway
     this.logger.log("ChatGateway Initialized!");
   }
 
-  handleConnection(client: Socket, ...args: any[]) {
-    this.logger.log(`${client.id} connected!`);
-    this.logger.log(args);
+  async emitOnlineUserIds() {
+    const sockets = await this.wss.in("ONLINE_USERS").fetchSockets();
+    const onlineUserIds = new Set();
+    for (const socket of sockets) {
+      onlineUserIds.add((socket as any).request.user._id);
+    }
+
+    this.wss.to("ONLINE_USERS").emit("onlineUserIds", [...onlineUserIds]);
   }
 
-  handleDisconnect(client: Socket) {
-    this.logger.log(`${client.id} disconnected!`);
+  async handleConnection(
+    client: Socket & { request: { user: User } },
+    ...args: any[]
+  ) {
+    client.join("ONLINE_USERS");
+    await this.emitOnlineUserIds();
+  }
+
+  async handleDisconnect(client: Socket & { request: { user: User } }) {
+    client.leave("ONLINE_USERS");
+    await this.emitOnlineUserIds();
   }
 
   @SubscribeMessage("chatToServer")
