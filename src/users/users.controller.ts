@@ -27,7 +27,7 @@ export class UsersController {
   async createUser(@Body() createUserDto: CreateUserDto) {
     if (await this.usersService.doesUserExists(createUserDto.email)) {
       return {
-        message: "User already exists",
+        message: "Email already exists",
       };
     }
 

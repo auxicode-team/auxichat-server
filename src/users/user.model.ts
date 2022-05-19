@@ -6,12 +6,20 @@ export enum Role {
   USER = "user",
 }
 
+export enum Gender {
+  MALE = "male",
+  FEMALE = "female",
+  OTHER = "other",
+}
+
 const UserSchema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, unique: true, required: true },
     role: { type: String, enum: Role, default: Role.USER },
     verified: { type: Boolean, required: true, default: false },
+    gender: { type: String, enum: Gender, required: true },
+    image: { type: String },
     address: { type: String },
     password: { type: String, required: true },
   },
@@ -49,6 +57,8 @@ export interface User extends Document {
   email: string;
   role: Role;
   verified: boolean;
+  gender: Gender;
+  image: string;
   address: string;
   password: string;
   validatePassword(password: string): boolean;

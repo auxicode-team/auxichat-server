@@ -1,4 +1,5 @@
-import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsString } from "class-validator";
+import { Gender } from "../user.model";
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -12,4 +13,11 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsString()
   password: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsEnum(Gender, {
+    message: "Gender can only be 'male' or 'female' or 'other'",
+  })
+  gender: string;
 }
