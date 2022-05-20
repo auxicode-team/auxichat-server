@@ -7,8 +7,9 @@ RUN if [ "$NODE_ENV" = "production" ]; \
   then npm install --only=production; \
   else npm install; \
   fi
+RUN npm run prebuild && npm run build
 
 COPY . ./
 # ENV PORT 5000
 # EXPOSE $PORT
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start:prod"]
