@@ -58,7 +58,9 @@ export class ChatGateway
     message: { sender: string; room: string; message: string },
   ) {
     console.log(client.request.user);
+    console.log(message);
 
-    this.wss.to(message.room).emit("chatToClient", message);
+    // this.wss.to(message.room).emit("chatToClient", message);
+    return "yoyo"
   }
 }

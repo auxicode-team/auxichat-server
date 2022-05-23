@@ -12,6 +12,25 @@ import { DatabaseService } from "./database.service";
           configService.get<string>("NODE_ENV") === "test"
             ? configService.get<string>("MONGODB_URI_TEST")
             : configService.get<string>("MONGODB_URI"),
+        connectionFactory: (connection) => {
+          connection.on("connected", () => {
+            if (configService.get<string>("NODE_ENV") !== "test") {
+              console.log(
+                `MongoDB connected with database: ${connection.name}`,
+              );
+            }
+          });
+          connection.on("disconnected", () => {
+            if (configService.get<string>("NODE_ENV") !== "test") {
+              console.log("MongoDB disconnected");
+            }
+          });
+          connection.on("error", (error) => {
+            console.log("MongoDB connection failed! for error: ", error);
+          });
+
+          return connection;
+        },
       }),
       inject: [ConfigService],
     }),
