@@ -44,6 +44,7 @@ export class ChatGateway
     ...args: any[]
   ) {
     client.join("ONLINE_USERS");
+    client.join(`${client.request.user._id}`);
     await this.emitOnlineUserIds();
   }
 
@@ -52,15 +53,28 @@ export class ChatGateway
     await this.emitOnlineUserIds();
   }
 
-  @SubscribeMessage("chatToServer")
+  @SubscribeMessage("sendMessage")
   handleMessage(
     client: any,
-    message: { sender: string; room: string; message: string },
+    payload: {
+      messageHistory: { sender: string; receiver: string; message: string }[];
+      messageToSent: { sender: string; receiver: string; message: string };
+    },
   ) {
-    console.log(client.request.user);
-    console.log(message);
+    this.wss.to(payload.messageToSent.receiver).emit("receiveMessage", [
+      ...payload.messageHistory,
+      {
+        ...payload.messageToSent,
+        sender: client.request.user._id,
+      },
+    ]);
 
-    // this.wss.to(message.room).emit("chatToClient", message);
-    return "yoyo"
+    return [
+      ...payload.messageHistory,
+      {
+        ...payload.messageToSent,
+        sender: client.request.user._id,
+      },
+    ];
   }
 }
