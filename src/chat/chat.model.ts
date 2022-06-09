@@ -2,16 +2,8 @@ import { Schema, Document } from "mongoose";
 
 export const ChatSchema = new Schema(
   {
-    sender: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    receiver: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    sender: { type: String, required: true },
+    receiver: { type: String, required: true },
     message: { type: String, required: true },
   },
   {

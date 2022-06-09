@@ -46,10 +46,14 @@ export class UsersController {
 
   @UseGuards(SessionAuthGuard)
   @Get("/getAll")
-  async getAllUser(@Query() query: any) {
+  async getAllUser(@Query() query: any, @Request() req: any) {
     const { page = 1, limit = 40 } = query;
 
-    const allUsers = await this.usersService.findAll(page, limit);
+    const allUsers = await this.usersService.findAll(
+      page,
+      limit,
+      `${req.user._id}`,
+    );
 
     return allUsers;
   }

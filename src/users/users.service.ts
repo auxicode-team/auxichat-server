@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { FilterQuery, Model, UpdateQuery } from "mongoose";
+import { FilterQuery, Model, Types, UpdateQuery } from "mongoose";
 import { UpdateResult, DeleteResult } from "mongodb";
 
 import { CreateUserDto } from "./dto/create-user-dto";
@@ -27,10 +27,61 @@ export class UsersService {
     return result;
   }
 
-  async findAll(page: number, limit: number): Promise<PaginatedResult<User>> {
+  async findAll(
+    page: number,
+    limit: number,
+    requesterId: string,
+  ): Promise<PaginatedResult<User>> {
     const [data] = await this.userModel.aggregate([
-      { $match: { role: "user" } },
+      {
+        $match: {
+          _id: { $nin: [new Types.ObjectId(requesterId)] },
+          role: "user",
+        },
+      },
       { $project: { password: 0 } },
+      {
+        $lookup: {
+          from: "chats",
+          let: {
+            userId: {
+              $toString: "$_id",
+            },
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    {
+                      $and: [
+                        { $eq: ["$sender", "$$userId"] },
+                        { $eq: ["$receiver", requesterId] },
+                      ],
+                    },
+                    {
+                      $and: [
+                        { $eq: ["$sender", requesterId] },
+                        { $eq: ["$receiver", "$$userId"] },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              $sort: { createdAt: -1 },
+            },
+            {
+              $limit: 5,
+            },
+            {
+              $sort: { createdAt: 1 },
+            },
+          ],
+          as: "messageHistory",
+        },
+      },
       ...addPagination(page, limit),
     ]);
 

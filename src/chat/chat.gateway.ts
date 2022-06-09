@@ -9,7 +9,9 @@ import {
   WsResponse,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
+
 import { User } from "../users/user.model";
+import { ChatService } from "./chat.service";
 
 @WebSocketGateway({
   namespace: "/chat",
@@ -24,6 +26,8 @@ export class ChatGateway
   @WebSocketServer() wss: Server;
 
   private logger: Logger = new Logger("ChatGateway");
+
+  constructor(private readonly chatService: ChatService) {}
 
   afterInit(server: Server) {
     this.logger.log("ChatGateway Initialized!");
@@ -54,27 +58,18 @@ export class ChatGateway
   }
 
   @SubscribeMessage("sendMessage")
-  handleMessage(
+  async handleMessage(
     client: any,
-    payload: {
-      messageHistory: { sender: string; receiver: string; message: string }[];
-      messageToSent: { sender: string; receiver: string; message: string };
-    },
+    payload: { receiver: string; message: string },
   ) {
-    this.wss.to(payload.messageToSent.receiver).emit("receiveMessage", [
-      ...payload.messageHistory,
-      {
-        ...payload.messageToSent,
-        sender: client.request.user._id,
-      },
-    ]);
+    const newChat = {
+      ...payload,
+      sender: client.request.user._id,
+    };
 
-    return [
-      ...payload.messageHistory,
-      {
-        ...payload.messageToSent,
-        sender: client.request.user._id,
-      },
-    ];
+    const chat = await this.chatService.insertChat(newChat);
+    this.wss.to(payload.receiver).emit("receiveMessage", chat);
+
+    return chat;
   }
 }
