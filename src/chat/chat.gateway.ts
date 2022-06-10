@@ -68,7 +68,8 @@ export class ChatGateway
     };
 
     const chat = await this.chatService.insertChat(newChat);
-    this.wss.to(payload.receiver).emit("receiveMessage", chat);
+    this.wss.to(chat.receiver).emit("receiveMessage", chat);
+    this.wss.to(chat.sender).emit("sentMessage", chat);
 
     return chat;
   }
