@@ -1,3 +1,4 @@
+import { NestExpressApplication } from "@nestjs/platform-express";
 import * as dotenv from "dotenv";
 dotenv.config();
 import { ValidationPipe } from "@nestjs/common";
@@ -9,7 +10,7 @@ import { AppModule } from "./app.module";
 import { expressSession } from "./lib/expressSession";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: {
       origin: true,
       credentials: true,
@@ -22,6 +23,7 @@ async function bootstrap() {
     }),
   );
 
+  app.set("trust proxy", 1);
   app.use(expressSession);
 
   app.use(passport.initialize());
